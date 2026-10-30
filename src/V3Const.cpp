@@ -708,7 +708,7 @@ class ConstBitOpTreeVisitor final : public VNVisitorConst {
         }
         UASSERT_OBJ(isXorTree() || m_polarity, nodep, "must be the original polarity");
     }
-    virtual ~ConstBitOpTreeVisitor() = default;
+    ~ConstBitOpTreeVisitor() override = default;
 #undef CONST_BITOP_RETURN_IF
 #undef CONST_BITOP_SET_FAILED
 
@@ -2671,15 +2671,13 @@ class ConstVisitor final : public VNVisitor {
                     srcp = new AstCvtArrayToPacked{srcp->fileline(), srcp, nodep->dtypep()};
                 }
             } else if (VN_IS(srcDTypep, UnpackArrayDType)) {
-                srcp = new AstCvtArrayToPacked{srcp->fileline(), srcp, srcDTypep};
-                // Handling the case where lhs is wider than rhs by inserting zeros. StreamL does
-                // not require this, since the left streaming operator implicitly handles this.
-                const int packedBits = nodep->lhsp()->widthMin();
-                const int unpackBits
-                    = srcDTypep->arrayUnpackedElements() * srcDTypep->subDTypep()->widthMin();
-                const uint32_t offset = packedBits > unpackBits ? packedBits - unpackBits : 0;
-                srcp = new AstShiftL{srcp->fileline(), srcp,
-                                     new AstConst{srcp->fileline(), offset}, packedBits};
+                // Pack to the width of the whole array; the lhs width is matched below.
+                const int elementsNum = srcDTypep->arrayUnpackedElements();
+                const AstNodeDType* const elemDTypep = srcDTypep->subDTypep();
+                AstNodeDType* const packedDTypep = srcp->findBitOrLogicDType(
+                    elementsNum * elemDTypep->width(), elementsNum * elemDTypep->widthMin(),
+                    VSigning::UNSIGNED, elemDTypep->isFourstate());
+                srcp = new AstCvtArrayToPacked{srcp->fileline(), srcp, packedDTypep};
             }
             if (!VN_IS(dstDTypep, UnpackArrayDType) && !VN_IS(dstDTypep, QueueDType)
                 && !VN_IS(dstDTypep, DynArrayDType)) {
@@ -2691,6 +2689,8 @@ class ConstVisitor final : public VNVisitor {
                         srcp->fileline(), extendp,
                         new AstConst{srcp->fileline(), static_cast<uint32_t>(dWidth - sWidth)},
                         dWidth};
+                } else if (sWidth > dWidth) {
+                    srcp = new AstSel{srcp->fileline(), srcp, 0, dWidth};
                 }
             }
             nodep->rhsp(srcp);
@@ -3691,6 +3691,7 @@ class ConstVisitor final : public VNVisitor {
             && !VN_AS(nodep->rhsp(), Const)->num().isFourState()
             && varrefp  // Don't do messes with BITREFs/ARRAYREFs
             && !varrefp->varp()->hasStrengthAssignment()  // Strengths are resolved in V3Tristate
+            && !varrefp->varp()->isWiredNet()  // Wired drivers are merged in V3Tristate
             && !varrefp->varp()->valuep()  // Not already constified
             && !varrefp->varScopep()  // Not scoped (or each scope may have different initial val.)
             && !varrefp->varp()->isForced()  // Not forced (not really a constant)
@@ -4415,7 +4416,7 @@ class ConstVisitor final : public VNVisitor {
     TREEOP ("AstCond{$condp.isNeqZero,    $thenp, $elsep}", "replaceWChild(nodep,$thenp)");
     TREEOPA("AstCond{$condp.isZero,       $thenp.castConst, $elsep.castConst}", "replaceWChild(nodep,$elsep)");
     TREEOPA("AstCond{$condp.isNeqZero,    $thenp.castConst, $elsep.castConst}", "replaceWChild(nodep,$thenp)");
-    TREEOP ("AstCond{$condp, operandsSameTree($thenp,,$elsep)}","replaceWChild(nodep,$thenp)");
+    TREEOP ("AstCond{$condp.isPure, operandsSameTree($thenp,,$elsep)}","replaceWChild(nodep,$thenp)");
     TREEOP ("AstCond{$condp, matchCondCond(nodep)}", "DONE")  // Same condition then skip
     // This visit function here must allow for short-circuiting.
     TREEOPS("AstCond{$condp.isZero}",           "replaceWIteratedThs(nodep)");
