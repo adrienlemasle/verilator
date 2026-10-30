@@ -46,7 +46,10 @@
           integer cyc;
           initial cyc = 1;
 ~000006   wire [7:0] cyc_copy = cyc[7:0];
+          // Both alpha instances drive this net, a conflict the test relies on
+          // verilator lint_off MULTIDRIVEN
  000001   wire toggle_up;
+          // verilator lint_on MULTIDRIVEN
         
           typedef struct {int q[$];} str_queue_t;
           str_queue_t str_queue;

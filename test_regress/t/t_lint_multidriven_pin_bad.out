@@ -1,0 +1,65 @@
+%Warning-WIDTHTRUNC: t/t_lint_multidriven_pin_bad.v:30:5: Logical operator IF expects 1 bit on the If, but If's VARREF 'o' generates 32 bits.
+                                                        : ... note: In instance 't_lint_multidriven_pin_bad.i17'
+   30 |     if (o) $display("");
+      |     ^~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=latest
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:37:15: Variable with initial value also driven by module output port: 'init_pin'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:37:15: ... Location of variable initialization
+   37 |   wire [31:0] init_pin = 0;
+      |               ^~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:77:20: ... Location of output port connection
+   77 |   t_pin_sub i1 (.o(init_pin));
+      |                    ^~~~~~~~
+                      ... For warning description see https://verilator.org/warn/MULTIDRIVEN?v=latest
+                      ... Use "/* verilator lint_off MULTIDRIVEN */" and lint_on around source to disable this message.
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:41:15: Variable driven by continuous assignment also driven by module output port: 'cont_pin'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:69:10: ... Location of continuous assignment
+   69 |   assign cont_pin = a;
+      |          ^~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:79:20: ... Location of output port connection
+   79 |   t_pin_sub i3 (.o(cont_pin));
+      |                    ^~~~~~~~
+   41 |   wire [31:0] cont_pin;
+      |               ^~~~~~~~
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:46:15: Variable driven by continuous assignment also driven by module output port: 'cont_sel'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:71:10: ... Location of continuous assignment
+   71 |   assign cont_sel[3:0] = a[3:0];
+      |          ^~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:81:20: ... Location of output port connection
+   81 |   t_pin_sub i5 (.o(cont_sel));
+      |                    ^~~~~~~~
+   46 |   wire [31:0] cont_sel;
+      |               ^~~~~~~~
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:48:15: Variable driven by multiple module output ports: 'two_pins'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:87:20: ... Location of output port connection
+   87 |   t_pin_sub i6 (.o(two_pins));
+      |                    ^~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:88:20: ... Location of other output port connection
+   88 |   t_pin_sub i7 (.o(two_pins));
+      |                    ^~~~~~~~
+   48 |   wire [31:0] two_pins;
+      |               ^~~~~~~~
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:57:15: Variable with initial value also driven by module output port: 'part_port'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:57:15: ... Location of variable initialization
+   57 |   wire [31:0] part_port = 0;
+      |               ^~~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:83:26: ... Location of output port connection
+   83 |   t_pin_sub_part i16 (.o(part_port));
+      |                          ^~~~~~~~~
+%Warning-MULTIDRIVEN: t/t_lint_multidriven_pin_bad.v:62:15: Variable driven by continuous assignment also driven by module output port: 'mixed_port'
+                                                          : ... note: In instance 't_lint_multidriven_pin_bad'
+                      t/t_lint_multidriven_pin_bad.v:74:10: ... Location of continuous assignment
+   74 |   assign mixed_port = a;
+      |          ^~~~~~~~~~
+                      t/t_lint_multidriven_pin_bad.v:86:21: ... Location of output port connection
+   86 |   t_pin_sub i19 (.o(mixed_port));
+      |                     ^~~~~~~~~~
+   62 |   wire [31:0] mixed_port;
+      |               ^~~~~~~~~~
+%Error: Exiting due to

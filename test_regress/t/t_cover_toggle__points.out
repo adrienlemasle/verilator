@@ -80,9 +80,12 @@
 -000000  point: type=toggle comment=cyc_copy[6]:1->0 hier=top.t
 -000000  point: type=toggle comment=cyc_copy[7]:0->1 hier=top.t
 -000000  point: type=toggle comment=cyc_copy[7]:1->0 hier=top.t
+          // Both alpha instances drive this net, a conflict the test relies on
+          // verilator lint_off MULTIDRIVEN
 %000001   wire toggle_up;
 -000001  point: type=toggle comment=toggle_up:0->1 hier=top.t
 -000001  point: type=toggle comment=toggle_up:1->0 hier=top.t
+          // verilator lint_on MULTIDRIVEN
         
           typedef struct {int q[$];} str_queue_t;
           str_queue_t str_queue;
